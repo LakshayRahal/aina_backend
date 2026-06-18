@@ -1,0 +1,747 @@
+<html>
+
+
+<head>
+
+    <title>AIna</title>
+    <link rel="icon" type="image/png" href="assets/logo1.png" />
+
+    <meta name="description" content="Interactive visualiser for the Google Cloud Video Intelligence API.">
+    <meta name="keywords" content="google cloud, video, intelligence, api, video intelligence api, google cloud">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router@2.0.0/dist/vue-router.js"></script>
+
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f0ece4;
+            --bg-alt: #e8e3d9;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-secondary: #555555;
+            --text-muted: #888888;
+            --accent: #ff3d00;
+            --border: #1a1a1a;
+            --border-thick: 3px solid #1a1a1a;
+            --border-thin: 1.5px solid #1a1a1a;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --shadow-brutal: 5px 5px 0px #1a1a1a;
+            --shadow-brutal-sm: 3px 3px 0px #1a1a1a;
+            --shadow-brutal-accent: 5px 5px 0px var(--accent);
+        }
+
+        body {
+            font-family: var(--font-display);
+            color: var(--text);
+            min-height: 100vh;
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5 {
+            color: var(--text);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 28px;
+            background: var(--text);
+            color: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-header .logo {
+            width: 32px;
+            height: 32px;
+            border: 2px solid #555;
+            object-fit: cover;
+        }
+
+        .app-header .app-title {
+            font-family: var(--font-mono);
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--surface);
+        }
+
+        .app-header .app-subtitle {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: #999;
+            font-weight: 400;
+            margin-left: auto;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        /* ===== VIDEO — FULL WIDTH ===== */
+        #video-conatiner {
+            position: relative;
+            width: 100%;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-brutal);
+            background: #000;
+            margin-bottom: 16px;
+        }
+
+        #video-conatiner>canvas {
+            width: 100%;
+            position: absolute;
+            opacity: 0.8;
+            left: 0;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        video::-webkit-media-controls-fullscreen-button {
+            display: none !important;
+        }
+
+        /* ===== UPLOAD — HORIZONTAL STRIP ===== */
+        #upload-data {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            flex: 1;
+            background: var(--surface);
+            border: 3px dashed var(--border);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 80ms ease, box-shadow 80ms ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-brutal-sm);
+        }
+
+        .upload-area:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        .upload-area p {
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .upload-area input[type="file"] {
+            flex: 1;
+            min-width: 0;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .upload-area input[type="file"]::file-selector-button {
+            background: var(--text);
+            color: var(--surface);
+            border: none;
+            padding: 5px 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-family: var(--font-mono);
+            transition: background 80ms ease;
+        }
+
+        .upload-area input[type="file"]::file-selector-button:hover {
+            background: var(--accent);
+        }
+
+        /* ===== DATA WARNING ===== */
+        .data-warning {
+            background: #fff3cd;
+            border: var(--border-thick);
+            color: var(--text);
+            margin: 12px 0;
+            padding: 10px 20px;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: var(--shadow-brutal-sm);
+        }
+
+        /* ===== FEATURE TABS ===== */
+        .feature-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            border: var(--border-thick);
+            background: var(--surface);
+            box-shadow: var(--shadow-brutal);
+            margin-bottom: 24px;
+        }
+
+        .feature-tabs>div {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            padding: 10px 14px;
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 700;
+            border-right: 1.5px solid var(--border);
+            transition: all 60ms ease;
+            background: transparent;
+            white-space: nowrap;
+            user-select: none;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .feature-tabs>div:last-child {
+            border-right: none;
+        }
+
+        .feature-tabs>div:hover {
+            background: var(--bg-alt);
+        }
+
+        .feature-tabs>.selected {
+            background: var(--text) !important;
+            color: var(--surface) !important;
+        }
+
+        .feature-tabs>.selected .material-icons {
+            color: var(--accent) !important;
+        }
+
+        .feature-tabs>.disabled {
+            color: var(--text-muted);
+            opacity: 0.4;
+        }
+
+        .feature-tabs>.disabled:hover {
+            background: transparent;
+        }
+
+        .nav-tab>.material-icons {
+            color: var(--accent);
+            font-size: 14px;
+        }
+
+        .material-icons {
+            vertical-align: middle;
+            font-size: 16px;
+        }
+
+        /* ===== INSIGHTS PANEL ===== */
+        .insights-panel {
+            background: var(--surface);
+            border: var(--border-thick);
+            box-shadow: var(--shadow-brutal);
+            padding: 24px;
+            margin-bottom: 20px;
+            min-height: 200px;
+        }
+
+        /* ===== SEARCH ===== */
+        .search-container {
+            margin: 0;
+        }
+
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            border: var(--border-thick);
+            background: var(--surface);
+            box-shadow: var(--shadow-brutal-sm);
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 0.82rem;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: var(--font-mono);
+        }
+
+        .search-container input::placeholder {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.68rem;
+            letter-spacing: 0.04em;
+        }
+
+        .search-button {
+            padding: 12px 22px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: var(--text);
+            color: var(--surface);
+            border: none;
+            border-left: var(--border-thick);
+            cursor: pointer;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: background 60ms ease;
+        }
+
+        .search-button:hover {
+            background: var(--accent);
+        }
+
+        .search-results {
+            margin-top: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--surface);
+            border: var(--border-thick);
+            border-top: none;
+        }
+
+        .search-result {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--text);
+            transition: all 60ms ease;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .search-result:last-child { border-bottom: none; }
+
+        .search-result:hover {
+            background: var(--bg-alt);
+            padding-left: 22px;
+        }
+
+        /* ===== BOTTOM BAR ===== */
+        .bottom-bar {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .bottom-bar .search-container {
+            flex: 1;
+        }
+
+        /* ===== SECTION LABEL ===== */
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg); border-left: 1.5px solid var(--border); }
+        ::-webkit-scrollbar-thumb { background: var(--text); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        ::selection { background: var(--accent); color: white; }
+    </style>
+</head>
+
+
+<body>
+
+    <div id="app">
+
+        <header class="app-header">
+            <img class="logo" src="assets/logo1.png">
+            <span class="app-title">AIna</span>
+        </header>
+
+        <div class="main-content">
+
+            <!-- VIDEO — FULL WIDTH -->
+            <div id="video-conatiner">
+                <canvas id="my_canvas" width="800" height="500"></canvas>
+                <video id="video" controls autoplay></video>
+            </div>
+
+            <!-- UPLOAD — HORIZONTAL STRIP -->
+            <div id="upload-data">
+                <div class="upload-area" ondrop="drop_video(event)" ondragover="drag_enter(event)">
+                    <p>Video</p>
+                    <input id="video_input" type="file" accept="video/*" />
+                </div>
+                <div class="upload-area" ondrop="drop_json(event)" ondragover="drag_enter(event)">
+                    <p>.JSON</p>
+                    <input id="json_input" type="file" accept="application/JSON" />
+                </div>
+            </div>
+
+            <div v-if="data_misaligned" class="data-warning">
+                It looks like the json data doesn't align with the video file, are you sure you have all of the right files
+                uploaded?
+            </div>
+
+            <!-- FEATURE TABS -->
+            <annotations-nav v-bind:title_ids_dict="title_ids_dict" v-bind:detected_features="detected_features"
+                v-bind:current_view="current_view" v-on:nav-clicked="set_current_view">
+            </annotations-nav>
+
+            <!-- INSIGHTS PANEL -->
+            <div class="insights-panel">
+                <div class="section-label">{{current_view}}</div>
+
+                <object-tracking-viz v-if="current_view == 'Object Tracking'" id="object_tracks" v-bind:json_data="json_data"
+                    v-bind:video_info="video_info" v-on:segment-clicked="jump_video"></object-tracking-viz>
+
+                <label-detection-viz v-if="current_view == 'Label Detection'" id="label_detection" v-bind:json_data="json_data"
+                    v-bind:video_info="video_info" v-on:segment-clicked="jump_video"></label-detection-viz>
+
+                <shot-detection-viz v-if="current_view == 'Shot Detection'" id="shot_detection" v-bind:json_data="json_data"
+                    v-bind:video_info="video_info" v-on:shot-clicked="jump_video"></shot-detection-viz>
+
+                <speech-transcription-viz v-if="current_view == 'Speech Transcription'" id="speech_transcription"
+                    v-bind:json_data="json_data" v-bind:video_info="video_info" v-on:word-clicked="jump_video">
+                </speech-transcription-viz>
+
+                <person-detection-viz v-if="current_view == 'Person Detection'" id="person_detection"
+                    v-bind:json_data="json_data" v-bind:video_info="video_info" v-on:segment-clicked="jump_video">
+                </person-detection-viz>
+
+                <face-detection-viz v-if="current_view == 'Face Detection'" id="face_detection" v-bind:json_data="json_data"
+                    v-bind:video_info="video_info" v-on:segment-clicked="jump_video">
+                </face-detection-viz>
+
+                <logo-recognition-viz v-if="current_view == 'Logo Recognition'" id="logo_recognition"
+                    v-bind:json_data="json_data" v-bind:video_info="video_info" v-on:segment-clicked="jump_video">
+                </logo-recognition-viz>
+
+                <text-detection-viz v-if="current_view == 'Text Detection'" id="text_detection" v-bind:json_data="json_data"
+                    v-bind:video_info="video_info" v-on:segment-clicked="jump_video">
+                </text-detection-viz>
+
+                <explicit-content-detection-viz v-if="current_view == 'Explicit Content Detection'"
+                    id="explicit_content_detection" v-bind:json_data="json_data" v-bind:video_info="video_info"
+                    v-on:shot-clicked="jump_video">
+                </explicit-content-detection-viz>
+            </div>
+
+            <!-- SEARCH AT BOTTOM -->
+            <div class="section-label">Search</div>
+            <search-component v-bind:json_data="json_data" v-on:jump-to-time="jump_video"></search-component>
+
+        </div>
+
+    </div>
+
+
+
+
+    <script src="utils/utils.js"></script>
+
+    <script src="components/object_tracking.js"></script>
+    <script src="components/label_detection.js"></script>
+    <script src="components/shot_detection.js"></script>
+    <script src="components/speech_transcription.js"></script>
+    <script src="components/person_detection.js"></script>
+    <script src="components/face_detection.js"></script>
+    <script src="components/logo_recognition.js"></script>
+    <script src="components/text_detection.js"></script>
+    <script src="components/explicit_content_detection.js"></script>
+    <script src="components/search.js"></script>
+
+    <script>
+
+        function jump_video(time) {
+            const video = document.querySelector('video')
+            video.currentTime = time
+            video.play()
+        }
+
+
+
+        // define component
+        Vue.component('annotations-nav-tab', {
+            props: ['title', 'current_view', 'data_id', 'detected_features'],
+            computed: {
+                has_data: function () {
+                    return this.detected_features.includes(this.data_id)
+                }
+            },
+            template: `
+            <div class="nav-tab" v-bind:class="{selected:current_view == title, disabled:(!has_data)}">{{title}}
+                <span v-if="has_data" class="material-icons">
+                    check_circle
+                </span>
+            </div>
+            `
+        })
+
+        Vue.component('annotations-nav', {
+            props: ['title_ids_dict', 'current_view', 'detected_features'],
+            methods: {
+                nav_clicked: function (title) {
+                    this.$emit('nav-clicked', title)
+                },
+            },
+            template: `
+            <div class="feature-tabs">
+                <annotations-nav-tab v-for="id, title in title_ids_dict"
+                    v-bind:title="title" v-bind:data_id="id"
+                    v-bind:detected_features="detected_features" v-bind:current_view="current_view"
+                    v-on:click.native="nav_clicked(title)">
+                </annotations-nav-tab>
+            </div>
+            `
+        })
+
+        var router = new VueRouter({
+            mode: 'history',
+            // routes: { path: '/match/:id', component: test_com}
+        });
+
+
+
+        var app = new Vue({
+            router,
+            el: '#app',
+            data: {
+                json_data: {},
+                video_info: { width: 800, height: 500, length: 252 },
+                video_length: 252,
+                current_view: 'Label Detection',
+                title_ids_dict: {
+                    'Label Detection': 'shot_label_annotations',
+                    'Shot Detection': 'shot_annotations',
+                    'Object Tracking': 'object_annotations',
+                    'Person Detection': 'person_detection_annotations',
+                    'Face Detection': 'face_detection_annotations',
+                    'Logo Recognition': 'logo_recognition_annotations',
+                    'Speech Transcription': 'speech_transcriptions',
+                    'Text Detection': 'text_annotations',
+                    'Explicit Content Detection': 'explicit_annotation'
+                }
+            }, methods: {
+                jump_video: function (event_data) {
+                    document.querySelector('video').scrollIntoView({ 'behavior': 'smooth', 'block': 'center' })
+                    jump_video(event_data.seconds)
+                },
+                set_current_view: function (new_view) {
+                    this.current_view = new_view
+                    router.push({ hash: '#' + new_view })
+
+
+                }
+            },
+            computed: {
+                data_misaligned: function () {
+                    console.log('delt')
+                    if (this.json_data)
+                        if (this.json_data.annotation_results) {
+                            const delta = this.video_info.length - this.json_data.annotation_results[0].segment.end_time_offset.seconds
+                            console.log('delt', delta)
+                            if (Math.abs(delta) > 2) {
+                                return true
+                            }
+                        }
+                    return false
+                },
+                detected_features: function () {
+
+                    var features = []
+
+                    if (!this.json_data.annotation_results)
+                        return features
+
+                    this.json_data.annotation_results.forEach(annotations => {
+                        console.log(Object.keys(annotations))
+                        features = features.concat(Object.keys(annotations))
+                    })
+
+                    return features
+                }
+            }
+        })
+
+
+
+        const URL = window.URL || window.webkitURL
+
+        function fetch_json(url) {
+            var json = null
+            $.ajax({
+                'async': false,
+                'url': url,
+                'dataType': "json",
+                'success': function (data) {
+                    json = data
+                }
+            })
+            return json
+        }
+
+        function load_video_from_url(url) {
+            video.src = url
+        }
+
+        function load_video_dragged(event) {
+            const file = this.files[0]
+            const file_url = URL.createObjectURL(file)
+            load_video_from_url(file_url)
+        }
+
+        function load_json_from_url(url) {
+            var json = null
+            $.ajax({
+                'async': false,
+                'url': url,
+                'dataType': "json",
+                'success': function (data) {
+                    json = data
+                }
+            })
+            json_data = json
+
+            console.log(json_data)
+            app.json_data = json_data
+
+            console.log('keys ->>', Object.keys(json_data))
+            // check validity of json
+            if (!('annotation_results' in json_data)) {
+                alert("⚠️ Sorry, json output from shell not supported ⚠️ To fix set the 'output_uri' configuration when calling the Video Intelligence API so that it outputs a .json file to Google Cloud Storage, and then download that .json file. Find links to example script at the top right of the screen.")
+                json_input.value = null
+            }
+
+
+
+        }
+
+        function load_json_dragged(event) {
+            const file = this.files[0]
+            const file_url = URL.createObjectURL(file)
+            load_json_from_url(file_url);
+        }
+
+        var json_data = {}
+        const video = document.getElementById('video')
+        const video_input = document.getElementById('video_input')
+        const json_input = document.getElementById('json_input')
+
+
+        video.oncanplay = function () {
+            console.log("Can start playing video", video.duration, video.videoHeight, video.videoWidth)
+            app.video_info.length = video.duration
+            app.video_length.duration
+            app.video_info.height = 500
+            app.video_info.width = 800
+        }
+
+        function drag_enter(ev) {
+            ev.preventDefault()
+        }
+
+        function drop_video(ev) {
+            ev.preventDefault()
+            video_input.files = ev.dataTransfer.files
+            video_input.dispatchEvent(new Event('change'))
+
+        }
+
+        function drop_json(ev) {
+            ev.preventDefault()
+            json_input.files = ev.dataTransfer.files
+            json_input.dispatchEvent(new Event('change'))
+        }
+
+        video_input.addEventListener('change', load_video_dragged, false)
+        json_input.addEventListener('change', load_json_dragged, false)
+
+        load_json_from_url("assets/test_json.json")
+        load_video_from_url("assets/test_video.mp4")
+
+
+        // check for hash code in url 
+
+        if (app.$route.hash) {
+            const hash_value = decodeURI(app.$route.hash.substring(1))
+            if (hash_value in app.title_ids_dict) {
+                app.current_view = hash_value
+            }
+
+        }
+
+
+
+    </script>
+
+
+</body>
+
+</html>
